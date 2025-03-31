@@ -174,6 +174,9 @@
       };
     };
   };
+
+  security.sudo.wheelNeedsPassword = false;
+
   security.acme = {
     acceptTerms = true;
     defaults.email = "joshuakb2@gmail.com";
