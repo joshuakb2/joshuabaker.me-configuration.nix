@@ -100,6 +100,7 @@
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
+  services.openssh.settings.PasswordAuthentication = false;
 
   networking.usePredictableInterfaceNames = false;
   networking.useDHCP = false;
