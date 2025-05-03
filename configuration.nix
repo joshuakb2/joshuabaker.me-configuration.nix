@@ -10,6 +10,12 @@
       ./hardware-configuration.nix
     ];
 
+  nixpkgs.overlays = [
+    (final: prev: {
+      openslides-manage-service = final.callPackage ./packages/openslides-manage-service.nix {};
+    })
+  ];
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Use the GRUB 2 boot loader.
@@ -69,7 +75,7 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.joshua = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" ];
+    extraGroups = [ "wheel" "networkmanager" "docker" ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGYEtwhOUhooRNQ2KX/tQOyjQ+H3xRQcl87B2gGk3yp2 joshua@Joshua-PC-Nix"
     ];
@@ -83,8 +89,9 @@
     git
     inetutils
     mtr
+    openslides-manage-service
     sysstat
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    vim
     wget
   ];
 
@@ -100,7 +107,10 @@
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-  services.openssh.settings.PasswordAuthentication = false;
+  services.openssh.settings = {
+    PasswordAuthentication = false;
+    X11Forwarding = true;
+  };
 
   networking.usePredictableInterfaceNames = false;
   networking.useDHCP = false;
@@ -111,6 +121,8 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   networking.firewall.enable = false;
+
+  virtualisation.docker.enable = true;
 
   services.httpd = {
     enable = true;
