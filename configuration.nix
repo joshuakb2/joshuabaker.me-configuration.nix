@@ -122,6 +122,9 @@
   # Or disable the firewall altogether.
   networking.firewall.enable = false;
 
+  # This prevents IPv6 from working correctly on a Linode server.
+  networking.tempAddresses = "disabled";
+
   virtualisation.docker.enable = true;
 
   services.httpd = {
