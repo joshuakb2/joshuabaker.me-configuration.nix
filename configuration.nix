@@ -2,21 +2,23 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, lib, pkgs, ... }:
+{
+  config,
+  pkgs,
+  ...
+}:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
-
-  nixpkgs.overlays = [
-    (final: prev: {
-      openslides-manage-service = final.callPackage ./packages/openslides-manage-service.nix {};
-    })
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
   ];
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+  nix.settings.trusted-users = [ "joshua" ];
 
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
@@ -31,7 +33,18 @@
   networking.hostName = "joshuabaker"; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
+  networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
+
+  # networking.nftables.enable = true;
+  # networking.nftables.tables = {
+  #   filter.family = "inet";
+  #   filter.content = ''
+  #     chain FORWARD {
+  #         type filter hook forward priority 0; policy drop;
+  #         meta l4proto icmpv6 accept
+  #     }
+  #   '';
+  # };
 
   # Set your time zone.
   time.timeZone = "US/Denver";
@@ -50,9 +63,6 @@
 
   # Enable the X11 windowing system.
   # services.xserver.enable = true;
-
-
-  
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
@@ -75,7 +85,11 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.joshua = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "docker" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "docker"
+    ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGYEtwhOUhooRNQ2KX/tQOyjQ+H3xRQcl87B2gGk3yp2 joshua@Joshua-PC-Nix"
     ];
@@ -89,7 +103,6 @@
     git
     inetutils
     mtr
-    openslides-manage-service
     sysstat
     vim
     wget
@@ -127,13 +140,21 @@
 
   virtualisation.docker.enable = true;
 
+  # services.jitsi-meet = {
+  #   enable = true;
+  #   hostName = "jitsi.joshuabaker.me";
+  # };
+
   services.httpd = {
     enable = true;
     virtualHosts = {
       "joshuabaker.me" = {
         addSSL = true;
         enableACME = true;
-        globalRedirect = "https://www.joshuabaker.me/";
+        # Use this instead of globalRedirect because globalRedirect overrides ACME
+        extraConfig = ''
+          RedirectMatch permanent "^/(?!\.well-known/acme-challenge/)(.*)" "https://www.joshuabaker.me/$1"
+        '';
       };
       "www.joshuabaker.me" = {
         documentRoot = "/var/www/html";
@@ -146,9 +167,9 @@
         forceSSL = true;
       };
       "keepass.joshuabaker.me" =
-      let
-        databasesDir = "/files/keepass";
-      in
+        let
+          databasesDir = "/files/keepass";
+        in
         {
           documentRoot = "/files/keeweb";
           enableACME = true;
@@ -186,8 +207,48 @@
               AliasPreservePath on
             '';
           };
+        };
+      "dsafc.org" = {
+        enableACME = true;
+        addSSL = true;
+        serverAliases = [ "www.dsafc.org" ];
+        # Use this instead of globalRedirect because globalRedirect overrides ACME
+        extraConfig = ''
+          RedirectMatch permanent "^/(?!\.well-known/acme-challenge/)(.*)" "https://nocodsa.org/$1"
+        '';
+      };
+      "asciinema.joshuabaker.me" = {
+        enableACME = true;
+        forceSSL = true;
+        locations."/".proxyPass = "http://localhost:4000/";
+      };
+      "budget.joshuabaker.me" = {
+        enableACME = true;
+        forceSSL = true;
+        locations."/".proxyPass = "http://localhost:3000/";
+        extraConfig = ''
+          RequestHeader set X-Forwarded-Proto "https"
+        '';
       };
     };
+  };
+
+  services.joshbooks = {
+    enable = true;
+    env = config.age.secrets.joshbooks-env.path;
+  };
+  systemd.services.joshbooks.environment.NODE_OPTIONS = "--inspect";
+
+  services.postgresql = {
+    enable = true;
+    ensureDatabases = [ "joshbooks" ];
+    ensureUsers = [
+      {
+        name = "joshbooks";
+        ensureDBOwnership = true;
+        ensureClauses.password = "SCRAM-SHA-256$4096:YCNWQfYuRXs3HL7BcXF2Tw==$+keNu7ZLU67PiABp2Rp4uFSluTbDKmcGtdyxVghGBsw=:HuyRA+KFFCMofefaGKxPkuq/anYCUKZcior8C6jw3ZI=";
+      }
+    ];
   };
 
   security.sudo.wheelNeedsPassword = false;
@@ -207,6 +268,7 @@
     group = "wwwrun";
     mode = "440";
   };
+  age.secrets.joshbooks-env.file = ./secrets/joshbooks-env.age;
   age.identityPaths = [ "/root/.ssh/id_ed25519" ];
 
   # Copy the NixOS configuration file and link it from the resulting system
@@ -233,4 +295,3 @@
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
   system.stateVersion = "24.11"; # Did you read the comment?
 }
-

@@ -44,13 +44,33 @@
         "type": "github"
       }
     },
+    "joshbooks": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1787117143,
+        "narHash": "sha256-VgXZRfZPSmX+KN4wBtPP1iX3lwPfALgbqsBFuTLdiRs=",
+        "owner": "joshuakb2",
+        "repo": "joshbooks",
+        "rev": "1cb17e0e1d892ea19c2f80edacaadfb9dde5bec4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "joshuakb2",
+        "repo": "joshbooks",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1743095683,
-        "narHash": "sha256-gWd4urRoLRe8GLVC/3rYRae1h+xfQzt09xOfb0PaHSk=",
+        "lastModified": 1786862985,
+        "narHash": "sha256-FBJRXmbGXiSUDvYEbfLYRkckayyZ6SK1UEqhCrIZ2Cs=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "5e5402ecbcb27af32284d4a62553c019a3a49ea6",
+        "rev": "e5bdc4a41d4c072fe1e3787eaa0320a384741d44",
         "type": "github"
       },
       "original": {
@@ -63,6 +83,7 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "joshbooks": "joshbooks",
         "nixpkgs": "nixpkgs"
       }
     },

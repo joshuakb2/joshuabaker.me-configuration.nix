@@ -8,15 +8,27 @@
         darwin.follows = "";
       };
     };
-  };
-
-  outputs = { nixpkgs, agenix, ... }: {
-    nixosConfigurations.joshuabaker = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        agenix.nixosModules.default
-        ./configuration.nix
-      ];
+    joshbooks = {
+      url = "github:joshuakb2/joshbooks";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
+
+  outputs =
+    {
+      nixpkgs,
+      agenix,
+      joshbooks,
+      ...
+    }:
+    {
+      nixosConfigurations.joshuabaker = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          agenix.nixosModules.default
+          joshbooks.nixosModules.default
+          ./configuration.nix
+        ];
+      };
+    };
 }
