@@ -31,6 +31,7 @@
   boot.loader.timeout = 10;
 
   networking.hostName = "joshuabaker"; # Define your hostname.
+  networking.domain = "joshuabaker.me";
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
@@ -230,6 +231,10 @@
           RequestHeader set X-Forwarded-Proto "https"
         '';
       };
+      "${config.mailserver.fqdn}" = {
+        enableACME = true;
+        forceSSL = true;
+      };
     };
   };
 
@@ -251,6 +256,39 @@
     ];
   };
 
+  mailserver = {
+    enable = true;
+    stateVersion = 5;
+    fqdn = "mail.joshuabaker.me";
+    domains = [ "joshuabaker.me" ];
+
+    x509.useACMEHost = config.mailserver.fqdn;
+
+    accounts = {
+      "joshua@joshuabaker.me" = {
+        hashedPasswordFile = config.age.secrets.mailserver-joshua.path;
+        aliases = [
+          "admin@joshuabaker.me"
+          "josh@joshuabaker.me"
+          "postmaster@joshuabaker.me"
+        ];
+      };
+      "moe@joshuabaker.me" = {
+        hashedPasswordFile = config.age.secrets.mailserver-moe.path;
+      };
+    };
+
+    storage.path = "/files/vmail";
+
+    fullTextSearch = {
+      enable = true;
+      autoIndex = true;
+      fallback = false;
+    };
+  };
+  # This is necessary to get postfix to work
+  systemd.services.postfix-tlspol.serviceConfig.RestrictAddressFamilies = [ "AF_UNIX" ];
+
   security.sudo.wheelNeedsPassword = false;
 
   security.acme = {
@@ -269,6 +307,8 @@
     mode = "440";
   };
   age.secrets.joshbooks-env.file = ./secrets/joshbooks-env.age;
+  age.secrets.mailserver-joshua.file = ./secrets/mailserver-joshua.age;
+  age.secrets.mailserver-moe.file = ./secrets/mailserver-moe.age;
   age.identityPaths = [ "/root/.ssh/id_ed25519" ];
 
   # Copy the NixOS configuration file and link it from the resulting system

@@ -7,4 +7,6 @@ in
   "keepass-basic.age".publicKeys = keys;
   "keepass-digest.age".publicKeys = keys;
   "joshbooks-env.age".publicKeys = keys;
+  "mailserver-joshua.age".publicKeys = keys;
+  "mailserver-moe.age".publicKeys = keys;
 }

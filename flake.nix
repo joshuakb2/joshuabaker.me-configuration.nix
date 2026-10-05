@@ -12,6 +12,10 @@
       url = "github:joshuakb2/joshbooks";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    mailserver = {
+      url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-26.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -19,6 +23,7 @@
       nixpkgs,
       agenix,
       joshbooks,
+      mailserver,
       ...
     }:
     {
@@ -27,6 +32,7 @@
         modules = [
           agenix.nixosModules.default
           joshbooks.nixosModules.default
+          mailserver.nixosModules.default
           ./configuration.nix
         ];
       };

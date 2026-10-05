@@ -3,4 +3,4 @@
 nixos-rebuild switch \
     --flake .#joshuabaker \
     --target-host joshuabaker.me \
-    --use-remote-sudo
+    --elevate=sudo
