@@ -235,6 +235,11 @@
         enableACME = true;
         forceSSL = true;
       };
+      "${config.services.forgejo.settings.server.DOMAIN}" = {
+        enableACME = true;
+        forceSSL = true;
+        locations."/".proxyPass = "http://localhost:${toString config.services.forgejo.settings.server.HTTP_PORT}/";
+      };
     };
   };
 
@@ -288,6 +293,22 @@
   };
   # This is necessary to get postfix to work
   systemd.services.postfix-tlspol.serviceConfig.RestrictAddressFamilies = [ "AF_UNIX" ];
+
+  services.forgejo = {
+    enable = true;
+    database.type = "postgres";
+    lfs.enable = true;
+    settings = {
+      server = {
+        DOMAIN = "git.joshuabaker.me";
+        ROOT_URL = "https://${config.services.forgejo.settings.server.DOMAIN}/";
+        HTTP_PORT = 3100;
+        SSH_PORT = builtins.head config.services.openssh.ports;
+      };
+      service.DISABLE_REGISTRATION = true;
+    };
+    stateDir = "/files/forgejo";
+  };
 
   security.sudo.wheelNeedsPassword = false;
 
